@@ -16,8 +16,6 @@
 
 void UserMain(void)
 {
-	printf("\n user task \n");
-//用户自己的task
 //add by zxx start
 	My_task();
 //add by zxx end

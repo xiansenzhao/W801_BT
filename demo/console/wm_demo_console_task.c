@@ -470,7 +470,10 @@ void CreateDemoTask(void)
 //add by zxx start
 void my_ble_msg_task(void *sdata)
 {
+	//传过来的消息队列指针，这里我定义的是u8类型的
 	u8 *msg;
+	//蓝牙发送数据
+	u8 send_data[20] = {0x00}; 
 
 	demo_bt_enable();
 	while(bt_adapter_state == WM_BT_STATE_OFF)
@@ -480,19 +483,46 @@ void my_ble_msg_task(void *sdata)
 	tls_os_time_delay(5000 /HZ);
 	demo_ble_server_on();
 	printf("ble ready ok \r\n");
+	
+	//初始化三个IO口，注意对应开发板上的IO 这里使用5 25 26
+	tls_gpio_cfg(WM_IO_PB_05, WM_GPIO_DIR_OUTPUT, WM_GPIO_ATTR_FLOATING);
+	tls_gpio_cfg(WM_IO_PB_25, WM_GPIO_DIR_OUTPUT, WM_GPIO_ATTR_FLOATING);
+	tls_gpio_cfg(WM_IO_PB_26, WM_GPIO_DIR_OUTPUT, WM_GPIO_ATTR_FLOATING);
+	
 	for(;;)
 	{
+		//接收手机发送的数据，注意是数据是按照字节进行的接收
 		tls_os_queue_receive(ble_q,&msg, 0, 0);
+		//打印ble收到数据的长度
 		printf("ble revice len:%d\n",msg[0]);
+		//依次打印收到的ble数据
 		for(u8 i=0;i<msg[0];i++){
 			printf("%x ",msg[i+1]);
+			send_data[i] = msg[i+1];
 		}printf("\n");
+		
+		//分别判断前三个字节的数据，对应开关灯：00 开  其他数据 关
+		if(msg[1] != 0)
+			tls_gpio_write(WM_IO_PB_05,1);
+		else
+			tls_gpio_write(WM_IO_PB_05,0);
+		if(msg[2] != 0)
+			tls_gpio_write(WM_IO_PB_25,1);
+		else
+			tls_gpio_write(WM_IO_PB_25,0);
+		if(msg[3] != 0)
+			tls_gpio_write(WM_IO_PB_26,1);
+		else
+			tls_gpio_write(WM_IO_PB_26,0);
+		//返回打开成功信息：
+		
+		printf("send state:%d \r\n",tls_ble_server_demo_api_send_msg(send_data,3));
 	}
 	
 }
 
 
-
+//创建任务
 void My_task(void)
 {
 	if(tls_os_queue_create(&ble_q, 32)!=TLS_OS_SUCCESS)

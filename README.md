@@ -3,13 +3,18 @@
 
 this is a demo for W801 bt.
 
-step1：set '#define DEMO_CONSOLE				DEMO_ON' at at line 8 of wm_demo.h
-step2：add function 'Mytask()' in main.c and you can del 'CreateDemoTask()' function
-step3：add 'void My_task(void)' and 'void my_ble_msg_task(void *sdata)' function in wm_demo_console_task.c such as:
-//add by zxx start
+___step1___：set `#define DEMO_CONSOLE				DEMO_ON` at at line 8 of **wm_demo.h**
+
+___step2___：add function `Mytask()` main.c and you can del `CreateDemoTask()`function
+
+___step3___：add `void My_task(void)` and `void my_ble_msg_task(void *sdata)` function in **wm_demo_console_task.c** such as:
+
+```//add by zxx start
 void my_ble_msg_task(void *sdata)
 {
-	void *msg;
+void my_ble_msg_task(void *sdata)
+{
+	u8 *msg;
 
 	demo_bt_enable();
 	while(bt_adapter_state == WM_BT_STATE_OFF)
@@ -21,9 +26,14 @@ void my_ble_msg_task(void *sdata)
 	printf("ble ready ok \r\n");
 	for(;;)
 	{
-		tls_os_queue_receive(ble_q, (void **)&msg, 0, 0);
-		printf("ble revice 0x%x \n",(u32)msg);
+		tls_os_queue_receive(ble_q,&msg, 0, 0);
+		printf("ble revice len:%d\n",msg[0]);
+		for(u8 i=0;i<msg[0];i++){
+			printf("%x ",msg[i+1]);
+		}printf("\n");
 	}
+	
+}
 }
 
 
@@ -46,18 +56,18 @@ void My_task(void)
 
 }
 //add by zxx end
+```
 
-
-step4：add the following code at line 22 of wm_demo_console_task.c:
-"
+___step4___：add the following code at line 22 of **wm_demo_console_task.c**:
+```
 //BT
 #define    MYBLE_TASK_SIZE      2048
 static OS_STK 			MyBLETaskStk[MYBLE_TASK_SIZE];
 #define  MYBLE_TASK_PRIO               32
-"
+```
 
-step5：add:
-"
+___step5___：add:
+```
 //add by zxx start
 tls_os_queue_t 	*ble_q = NULL;
 
@@ -65,13 +75,13 @@ tls_os_queue_t 	*ble_q = NULL;
 u8 ble_data[255]  = {0};
 
 //add by zxx end
-"
-before 'gatt_svr_chr_demo_access_func(' function in wm_ble_server_api_demo.c
+```
+before `gatt_svr_chr_demo_access_func(`function in **wm_ble_server_api_demo.c**
 
-step6：add 'extern tls_os_queue_t 	*ble_q' in wm_ble_server_api_demo.h
+___step6___：add `extern tls_os_queue_t 	*ble_q` in **wm_ble_server_api_demo.h**
 
-setep7：modify the 'print_bytes(om->om_data, om->om_len)' code of 'gatt_svr_chr_demo_access_func(' function to :
-"
+___setep7___：modify the `print_bytes(om->om_data, om->om_len)`code of `gatt_svr_chr_demo_access_func(`function to :
+```
 //add by zxx start
 if(om->om_len > 200)
 {
@@ -90,14 +100,13 @@ for (u8 i = 0; i < om->om_len; i++) {
 		tls_os_queue_send(ble_q,ble_data, 0);
 	}
 //add by zxx end
-"
-in wm_ble_server_api_demo.c
+```
+in **wm_ble_server_api_demo.c**
 
 
-setep7：add :
-"
+___setep8___：add :
+```
 #include "wm_bt_app.h"
 #include "wm_ble_server_api_demo.h"
-"
-in wm_include.h
-
+```
+in **wm_include.h**

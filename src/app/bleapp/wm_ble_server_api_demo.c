@@ -231,7 +231,7 @@ static void ble_server_indication_sent_cb(int conn_id, int status)
 {
 	int len = 0;
     tls_bt_status_t ret;
-
+	
     g_send_pending = 0;
     if(!g_ble_demo_indicate_enable)
     {
@@ -244,6 +244,7 @@ static void ble_server_indication_sent_cb(int conn_id, int status)
         memset(g_ind_data, ss, sizeof(g_ind_data));
         ss++;
         if(ss > 0xFE) ss = 0x00;
+		TLS_BT_APPL_TRACE_DEBUG("aaaaaaaaaaaaaaaaaaa\r\n");
     	tls_ble_server_demo_api_send_msg(g_ind_data, g_mtu); 
 
     }else
@@ -562,7 +563,6 @@ int tls_ble_server_demo_api_send_msg(uint8_t *data, int data_len)
     struct os_mbuf *om;
     
     //TLS_BT_APPL_TRACE_DEBUG("### %s len=%d\r\n", __FUNCTION__, data_len);
-
     if(g_send_pending) return BLE_HS_EBUSY;
 
     if(data_len<=0 || data == NULL)
@@ -574,7 +574,6 @@ int tls_ble_server_demo_api_send_msg(uint8_t *data, int data_len)
     if (!om) {
         return BLE_HS_ENOMEM;
     }
-    
     rc = ble_gattc_indicate_custom(g_ble_demo_conn_handle,g_ble_demo_attr_indicate_handle, om); 
     if(rc == 0)
     {
