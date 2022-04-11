@@ -516,7 +516,8 @@ void my_ble_msg_task(void *sdata)
 			tls_gpio_write(WM_IO_PB_26,0);
 		//返回打开成功信息：
 		
-		printf("send state:%d \r\n",tls_ble_server_demo_api_send_msg(send_data,3));
+		//printf("send state:%d \r\n",tls_ble_server_demo_api_send_msg(send_data,3));
+		printf("send state:%d \r\n",tls_ble_server_demo_api_send_notify_msg(send_data,3));
 	}
 	
 }

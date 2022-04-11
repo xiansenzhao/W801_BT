@@ -41,12 +41,18 @@ uint16_t g_ble_demo_attr_indicate_handle;
 uint16_t g_ble_demo_attr_write_handle;
 uint16_t g_ble_demo_conn_handle ;
 
+//add by zxx start
+uint16_t g_ble_demo_attr_notify_handle;
+//add by zxx end
 
 
 #define WM_GATT_SVC_UUID      0xFFF0
 #define WM_GATT_INDICATE_UUID 0xFFF1
 #define WM_GATT_WRITE_UUID    0xFFF2
 
+//add by zxx start
+#define WM_GATT_NOTIFY_UUID   0xFFF3
+//add by zxx end
 
 static int
 gatt_svr_chr_demo_access_func(uint16_t conn_handle, uint16_t attr_handle,
@@ -61,6 +67,13 @@ gatt_svr_chr_demo_access_func(uint16_t conn_handle, uint16_t attr_handle,
 static int
 gatt_svr_chr_demo_write_func(uint16_t conn_handle, uint16_t attr_handle,
                               struct ble_gatt_access_ctxt *ctxt, void *arg);
+
+
+//notify_test函数没有任何的作用，不添加notify方式蓝牙初始化会失败。
+static int notify_test()
+{
+	;
+}
 
 
 static const struct ble_gatt_svc_def gatt_demo_svr_svcs[] = {
@@ -78,7 +91,17 @@ static const struct ble_gatt_svc_def gatt_demo_svr_svcs[] = {
                 .val_handle = &g_ble_demo_attr_indicate_handle,
                 .access_cb = gatt_svr_chr_demo_access_func,
                 .flags = BLE_GATT_CHR_F_INDICATE,
-            },{
+            }
+			//add by zxx start
+			,{
+                .uuid = BLE_UUID16_DECLARE(WM_GATT_NOTIFY_UUID),
+                .val_handle = &g_ble_demo_attr_notify_handle,
+				//这个函数不会调用，但是必须要有，
+                .access_cb = notify_test,
+                .flags = BLE_GATT_CHR_F_NOTIFY,
+            }
+			//add by zxx end
+			,{
               0, /* No more characteristics in this service */
             } 
          },
@@ -149,6 +172,17 @@ int wm_ble_server_api_demo_adv(bool enable)
  * LOCAL FUNCTION DEFINITIONS
  ****************************************************************************************
  */
+
+
+static int
+gatt_svr_chr_demo_write_func(uint16_t conn_handle, uint16_t attr_handle,
+                              struct ble_gatt_access_ctxt *ctxt, void *arg)
+{
+  printf("gatt_svr_chr_demo_write_func \r\n");
+}
+							  
+
+
 
 //add by zxx start
 tls_os_queue_t 	*ble_q = NULL;
@@ -581,6 +615,36 @@ int tls_ble_server_demo_api_send_msg(uint8_t *data, int data_len)
     }
     return rc;
 }
+
+
+//add by zxx start
+int tls_ble_server_demo_api_send_notify_msg(uint8_t *data, int data_len)
+{
+    int rc;
+    struct os_mbuf *om;
+    
+    //TLS_BT_APPL_TRACE_DEBUG("### %s len=%d\r\n", __FUNCTION__, data_len);
+    //if(g_send_pending) return BLE_HS_EBUSY;
+
+    if(data_len<=0 || data == NULL)
+    {
+        return BLE_HS_EINVAL;
+    }
+    
+    om = ble_hs_mbuf_from_flat(data, data_len);
+    if (!om) {
+        return BLE_HS_ENOMEM;
+    }
+    rc = ble_gattc_notify_custom(g_ble_demo_conn_handle,g_ble_demo_attr_notify_handle, om); 
+    /*
+	if(rc == 0)
+    {
+        g_send_pending = 1;
+    }
+	*/
+    return rc;
+}
+//add by zxx end
 
 #endif
 

@@ -2,6 +2,8 @@
 #define __WM_BLE_SERVER_DEMO_H__
 #include "wm_bt.h"
 
+
+
 //add by zxx start
 extern tls_os_queue_t 	*ble_q;
 //add by zxx end
