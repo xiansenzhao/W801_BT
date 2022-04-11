@@ -1,5 +1,6 @@
 # W801_BT
 
+这个README有点旧，可以查看CSDN教程：https://blog.csdn.net/qq_37280428/article/details/124081676
 
 this is a demo for W801 bt.
 
